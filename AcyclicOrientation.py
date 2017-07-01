@@ -5,7 +5,7 @@ Solves problem as articulated here:
 https://community.topcoder.com/stat?c=problem_statement&pm=14598&rd=16932
 
 Problem Statement:
-    	
+
 You are given a simple undirected graph G on n vertices. The vertices are
 numbered 0 through n-1. You are given the int n and two int[]s u and v that
 contain the list of edges. More precisely, for each valid index i the graph
