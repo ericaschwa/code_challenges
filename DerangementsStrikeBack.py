@@ -20,6 +20,8 @@ Compute and return the bitwise xor of the values B[i] for i between 1 and m,
 inclusive.
 """
 
+import math
+
 def bitwise_xor(x, y):
 	""" Returns the bitwise xor of x and y """
 	power  = 0
@@ -32,4 +34,43 @@ def bitwise_xor(x, y):
 		power  += 1
 		x /= 2
 		y /= 2
+	return result
+
+def generate_perms(l):
+	"""
+	Returns list containing all permutations of the given list l
+	"""
+	if len(l) <= 1: return [l]
+	first  = l[0]
+	rests  = generate_perms(l[1:])
+	result = []
+	for rest in rests:
+		result += [rest[:i] + [first] + rest[i:] for i in xrange(len(rest) + 1)]
+	return result
+
+def num_perms(i, n):
+	"""
+	Returns the number of permutations of the set {1,2,...,n+i} such that the
+	first i values are not fixed points of the permutation
+	"""
+	perms = generate_perms(range(1, n + i + 1))
+	count = 0
+	for perm in perms:
+		fixed_pt = True
+		for j in xrange(1, i):
+			if perm[j] == j:
+				fixed_pt = False
+				break
+		if fixed_pt: count += 1
+	return count
+
+def count(n, m):
+	"""
+	Executes the solution to the problem described in the problem statement
+	"""
+	D = [num_perms(i, n) for i in xrange(1, m + 1)]
+	B = [(D[i] / math.factorial(n)) % (pow(10,9) + 7) for i in xrange(len(D))]
+	result = B[0]
+	for i in xrange(1, len(B)):
+		result = bitwise_xor(result, B[i])
 	return result
