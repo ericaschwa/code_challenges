@@ -57,8 +57,9 @@ def num_perms(i, n):
 	count = 0
 	for perm in perms:
 		fixed_pt = True
-		for j in xrange(1, i):
-			if perm[j] == j:
+		for j in xrange(1, i + 1):
+			if j >= len(perm): break
+			if perm[j] == j + 1:
 				fixed_pt = False
 				break
 		if fixed_pt: count += 1
