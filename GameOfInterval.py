@@ -73,9 +73,78 @@ exceed 4500*4 = 18000). We guarantee the solution always exist under these
 constraints.
 """
 
+def to_base36(n):
+    """
+    Given int n, returns string containing its 2-digit, base-36 representation
+    """
+    letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+               'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    result_reverse = ''
+    while n > 0:
+        digit = n % 36
+        if digit < 10:
+            result_reverse += str(digit)
+        else:
+            result_reverse += letters[digit-10]
+        n /= 36
+        if n == 0 and len(result_reverse) < 2:
+        	result_reverse += '0'
+    result = ''
+    for i in xrange(len(result_reverse) - 1, -1, -1):
+        result += result_reverse[i]
+    return result
+
+def output_intervals(l):
+	"""
+	Given a list l of intervals, output them in the format as specified by the
+	problem statement
+	"""
+	result = ''
+	for interval in l:
+		result += to_base36(interval[0]) + to_base36(interval[1])
+	return result
+
+def score(k, p, n):
+	"""
+	Given the values for k, p, and n, returns the score for that round
+	"""
+	return k + p * n
+
+def generate_intervals(n, k):
+	"""
+	Returns a list of all interval sets that can be generated from n cards in k
+	turns
+	"""
+	intervals = [(i, i) for i in xrange(n)]
+	# TODO: k turns!
+	return intervals
+
+def calculate_penalty(intervals, l, r):
+	"""
+	Given intervals and [L, R], returns the number of intervals in the list
+	needed to form the [L, R] interval
+	"""
+	# https://cs.stackexchange.com/questions/9531/finding-the-minimum-subset-of-intervals-covering-the-whole-set
+
+def play_round(n, k):
+	"""
+	Given values for n and k, plays a round of the game and returns the minimum
+	penalty and the intervals that produced it
+	"""
+	intervals_set = generate_intervals(n, k)
+	for intervals in intervals_set:
+		p = 0
+		for l in xrange(n):
+			for r in xrange(l, n):
+				cost = calculate_penalty(intervals, l, r)
+				if cost > p: p = cost
+		if score(k, p, n) <= 6415: return intervals
 
 def construct(n):
-	"""
-	Executes the solution to the problem described in the problem statement
-	"""
-	pass
+    """
+    Executes the solution to the problem described in the problem statement
+    """
+    num_intervals = factorial(n)/factorial(n-2)/2
+    for k in xrange(num_intervals + 1):
+    	intervals = play_round(n, k)
+    	if intervals is not None: return output_intervals(intervals)
