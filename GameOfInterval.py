@@ -88,57 +88,78 @@ def to_base36(n):
             result_reverse += letters[digit-10]
         n /= 36
         if n == 0 and len(result_reverse) < 2:
-        	result_reverse += '0'
+            result_reverse += '0'
     result = ''
     for i in xrange(len(result_reverse) - 1, -1, -1):
         result += result_reverse[i]
     return result
 
 def output_intervals(l):
-	"""
-	Given a list l of intervals, output them in the format as specified by the
-	problem statement
-	"""
-	result = ''
-	for interval in l:
-		result += to_base36(interval[0]) + to_base36(interval[1])
-	return result
+    """
+    Given a list l of intervals, output them in the format as specified by the
+    problem statement
+    """
+    result = ''
+    for interval in l:
+        result += to_base36(interval[0] + 0.5) + to_base36(interval[1] - 0.5)
+    return result
 
 def score(k, p, n):
-	"""
-	Given the values for k, p, and n, returns the score for that round
-	"""
-	return k + p * n
+    """
+    Given the values for k, p, and n, returns the score for that round
+    """
+    return k + p * n
 
 def generate_intervals(n, k):
-	"""
-	Returns a list of all interval sets that can be generated from n cards in k
-	turns
-	"""
-	intervals = [(i, i) for i in xrange(n)]
-	# TODO: k turns!
-	return intervals
+    """
+    Returns a list of all interval sets that can be generated from n cards in k
+    turns
+    """
+    intervals = [(i, i + 1) for i in xrange(n)]
+    # TODO: k turns!
+    return intervals
+
+def compare(interval1, interval2):
+    """
+    Compares 2 intervals, returns whether the first interval is considered to be
+    'before' the second (based on their end points).
+    """
+    return (interval1[1] < interval2[1])
 
 def calculate_penalty(intervals, l, r):
-	"""
-	Given intervals and [L, R], returns the number of intervals in the list
-	needed to form the [L, R] interval
-	"""
-	# https://cs.stackexchange.com/questions/9531/finding-the-minimum-subset-of-intervals-covering-the-whole-set
+    """
+    Given intervals and [L, R], returns the number of intervals in the list
+    needed to form the [L, R] interval
+    """
+    # https://cs.stackexchange.com/questions/9531/
+    # finding-the-minimum-subset-of-intervals-covering-the-whole-set
+    r += 1
+    curr_range = r - l
+    intervals  = sorted(intervals, cmp=compare)
+    T = [[float('inf') for k in xrange(len(intervals))] for j in xrange(curr_range)]
+    for k in xrange(len(intervals)): T[0][k] = 0
+
+    for j in xrange(curr_range):
+        for k in xrange(len(intervals)):
+            if intervals[k][1] - l >= j and intervals[k][0] - l < len(T):
+                T[j][k] = min(T[j][k-1], min(T[intervals[k][0] - l]) + 1)
+
+    print T
+    return min(T[curr_range - 1])
 
 def play_round(n, k):
-	"""
-	Given values for n and k, plays a round of the game and returns the minimum
-	penalty and the intervals that produced it
-	"""
-	intervals_set = generate_intervals(n, k)
-	for intervals in intervals_set:
-		p = 0
-		for l in xrange(n):
-			for r in xrange(l, n):
-				cost = calculate_penalty(intervals, l, r)
-				if cost > p: p = cost
-		if score(k, p, n) <= 6415: return intervals
+    """
+    Given values for n and k, plays a round of the game and returns the minimum
+    penalty and the intervals that produced it
+    """
+    intervals_set = generate_intervals(n, k)
+    for intervals in intervals_set:
+        p = 0
+        for l in xrange(n):
+            for r in xrange(l, n):
+                cost = calculate_penalty(intervals, l, r)
+                if cost > p: p = cost
+        if score(k, p, n) <= 6415: return intervals
 
 def construct(n):
     """
@@ -146,5 +167,5 @@ def construct(n):
     """
     num_intervals = factorial(n)/factorial(n-2)/2
     for k in xrange(num_intervals + 1):
-    	intervals = play_round(n, k)
-    	if intervals is not None: return output_intervals(intervals)
+        intervals = play_round(n, k)
+        if intervals is not None: return output_intervals(intervals)
