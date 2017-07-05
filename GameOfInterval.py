@@ -73,6 +73,8 @@ exceed 4500*4 = 18000). We guarantee the solution always exist under these
 constraints.
 """
 
+from math import factorial
+
 def to_base36(n):
     """
     Given int n, returns string containing its 2-digit, base-36 representation
@@ -101,7 +103,7 @@ def output_intervals(l):
     """
     result = ''
     for interval in l:
-        result += to_base36(interval[0] + 0.5) + to_base36(interval[1] - 0.5)
+        result += to_base36(interval[0]) + to_base36(interval[1] - 1)
     return result
 
 def score(k, p, n):
@@ -110,14 +112,42 @@ def score(k, p, n):
     """
     return k + p * n
 
+def intervals_overlap(a, b):
+    """
+    Returns True if intervals a and b overlap, False otherwise
+    """
+    return a[0] <= b[1] and b[0] <= a[1]
+
+def merge_intervals(a, b):
+    """
+    Returns result of merging intervals a and b
+    """
+    if a[0] < b[0]:
+        return (a[0], b[1])
+    return (b[0], a[1])
+
+def take_turns(intervals, k):
+    """
+    Takes k turns in the game
+    """
+    if k == 0: return [intervals]
+    intervals_set = []
+    for i in xrange(len(intervals)):
+        for j in xrange(i+1, len(intervals)):
+            if intervals_overlap(intervals[i], intervals[j]):
+                new_interval   = merge_intervals(intervals[i], intervals[j])
+                intervals.append(new_interval)
+                intervals_set += take_turns(intervals, k - 1)
+    return intervals_set
+
 def generate_intervals(n, k):
     """
     Returns a list of all interval sets that can be generated from n cards in k
     turns
     """
-    intervals = [(i, i + 1) for i in xrange(n)]
-    # TODO: k turns!
-    return intervals
+    intervals    = [(i, i + 1) for i in xrange(n)]
+    interval_set = take_turns(intervals, k)
+    return interval_set
 
 def compare(interval1, interval2):
     """
@@ -140,11 +170,10 @@ def calculate_penalty(intervals, l, r):
     for k in xrange(len(intervals)): T[0][k] = 0
 
     for j in xrange(curr_range):
-        for k in xrange(len(intervals)):
-            if intervals[k][1] - l >= j and intervals[k][0] - l < len(T):
+        for k in xrange(1, len(intervals)):
+            if intervals[k][1] - l >= j and intervals[k][0] - l < len(T) and intervals[k][0] - l > -1:
                 T[j][k] = min(T[j][k-1], min(T[intervals[k][0] - l]) + 1)
 
-    print T
     return min(T[curr_range - 1])
 
 def play_round(n, k):
@@ -159,13 +188,23 @@ def play_round(n, k):
             for r in xrange(l, n):
                 cost = calculate_penalty(intervals, l, r)
                 if cost > p: p = cost
-        if score(k, p, n) <= 6415: return intervals
+        s = score(k, p, n)
+        if s <= 6415: return (intervals, s)
 
 def construct(n):
     """
     Executes the solution to the problem described in the problem statement
     """
+    min_s         = float('inf')
+    min_interval  = None
     num_intervals = factorial(n)/factorial(n-2)/2
+
     for k in xrange(num_intervals + 1):
-        intervals = play_round(n, k)
-        if intervals is not None: return output_intervals(intervals)
+        round_result = play_round(n, k)
+        if round_result is not None:
+        	intervals, s = round_result
+        	if s < min_s:
+        		min_s        = s
+        		min_interval = intervals
+
+    return output_intervals(min_interval)
