@@ -182,6 +182,8 @@ def play_round(n, k):
     penalty and the intervals that produced it
     """
     intervals_set = generate_intervals(n, k)
+    min_s         = float('inf')
+    min_interval  = None
     for intervals in intervals_set:
         p = 0
         for l in xrange(n):
@@ -189,7 +191,10 @@ def play_round(n, k):
                 cost = calculate_penalty(intervals, l, r)
                 if cost > p: p = cost
         s = score(k, p, n)
-        if s <= 6415: return (intervals, s)
+        if s < min_s:
+            min_s = s
+            min_interval = intervals
+    return (min_interval, min_s)
 
 def construct(n):
     """
@@ -200,11 +205,9 @@ def construct(n):
     num_intervals = factorial(n)/factorial(n-2)/2
 
     for k in xrange(num_intervals + 1):
-        round_result = play_round(n, k)
-        if round_result is not None:
-        	intervals, s = round_result
-        	if s < min_s:
-        		min_s        = s
-        		min_interval = intervals
+        intervals, s = play_round(n, k)
+        if s < min_s:
+            min_s        = s
+            min_interval = intervals
 
     return output_intervals(min_interval)

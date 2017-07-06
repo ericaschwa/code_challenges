@@ -68,5 +68,5 @@ def LCS(A, B):
         L[i][0] = (0, 0, 0)
     for i in xrange(n+1):
         L[0][i] = (0, 1, 0)
-    LCS_DP        (L, A, B, m, n)
+    LCS_DP(L, A, B, m, n)
     return retrace_matrix(L, A,    m, n)
